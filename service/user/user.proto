@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package user;
+
+option go_package = "./user";
+
+// 注册信息
+message SignupRequest {
+  string name = 1;
+  string password = 2;
+}
+
+message SignupResponse {
+  int32 code = 1;
+  string message = 2;
+}
+
+// 登录信息
+message SigninRequest {
+  string name = 1;
+  string password = 2;
+}
+
+message SigninResponse {
+  int32 code = 1;
+  string message = 2;
+  string data = 3;
+}
+
+// 用户信息
+message UserInfoRequest {
+  string name = 1;
+}
+
+message UserInfoResponse {
+  string name = 1;
+  string email = 2;
+  string phone = 3;
+  string signupAt = 4;
+  string lastActiveAt = 5;
+  string status = 6;
+}
+
+service User {
+  rpc Signup(SignupRequest) returns(SignupResponse);
+  rpc Signin(SigninRequest) returns(SigninResponse);
+  rpc UserInfo(UserInfoRequest) returns(UserInfoResponse);
+}

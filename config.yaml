@@ -1,0 +1,29 @@
+system:
+  addr: ":8080"
+dbConf:
+  host: "127.0.0.1"
+  username: "root"
+  port: 3306
+  databaseName : "fileserver"
+  dbPwd: "123456"
+  maxIdleConns : 50
+  maxOpenConns : 100
+rdbConf:
+  host: "127.0.0.1"
+  port: 6379
+  password: ""
+  db: 0
+  pool_size: 100
+ossConf:
+  bucket: "testbucketyfhuge"
+  endpoint: "oss-cn-zhangjiakou.aliyuncs.com"
+  accessKeyID: "LTAI5tDoXuzCW3EN5H9XQSH6"
+  accessKeySecret: "Wb7moBsxeiMQ0bHDStBUjGDUciTGpu"
+rabbitConf:
+  asyncTransferEnable: true
+  rabbitURL: "amqp://guest:guest@127.0.0.1:5672/"
+  transExchangeName: "uploadserver.trans"
+  transOSSQueueName: "uploadserver.trans.oss"
+  transOSSErrQueueName: "uploadserver.trans.oss.err"
+  transOSSRoutingKey: "oss"
+

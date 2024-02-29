@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>分块上传和断点续传</title>
+</head>
+<body>
+
+    <input type="file" id="fileInput" />
+    <button onclick="startUpload()">开始上传</button>
+    <button onclick="pauseUpload()">暂停上传</button>
+    <button onclick="resumeUpload()">继续上传</button>
+
+    <script>
+        let file;
+        let uploadId;
+        let chunkSize = 1024 * 1024; // 1MB
+        let offset = 0;
+        let chunks = [];
+
+        function startUpload() {
+            const fileInput = document.getElementById('fileInput');
+            file = fileInput.files[0];
+
+            if (!file) {
+                alert('请选择文件');
+                return;
+            }
+
+            uploadId = generateUploadId();
+            offset = 0;
+            chunks = [];
+            uploadNextChunk();
+        }
+
+        function pauseUpload() {
+            alert('上传已暂停');
+        }
+
+        function resumeUpload() {
+            uploadNextChunk();
+        }
+
+        function uploadNextChunk() {
+            const chunk = file.slice(offset, offset + chunkSize);
+            if (chunk.size === 0) {
+                alert('文件上传完成');
+                return;
+            }
+
+            chunks.push(chunk);
+
+            const formData = new FormData();
+            formData.append('uploadId', uploadId);
+            formData.append('index', chunks.length - 1);
+            formData.append('chunk', chunk);
+
+            // 模拟上传请求，实际中需使用 XMLHttpRequest 或 Fetch API 发送请求
+            console.log(`上传文件块: ${chunks.length}/${Math.ceil(file.size / chunkSize)}`);
+
+            offset += chunkSize;
+        }
+
+        function generateUploadId() {
+            // 生成唯一的上传标识，可以使用时间戳等方式
+            return Date.now().toString();
+        }
+    </script>
+
+</body>
+</html>
