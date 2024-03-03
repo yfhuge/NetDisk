@@ -4,20 +4,23 @@ import (
 	"crypto/md5"
 	"crypto/sha1"
 	"encoding/hex"
-	"fmt"
-	"github.com/golang-jwt/jwt/v4"
-	"go/doc/comment"
+	"errors"
 	"hash"
 	"io"
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/golang-jwt/jwt/v4"
 )
 
-type (
-	AccessSecret := "ad879037-d3fd-tghj-112d-6bfc35d54b7d"
-	AccessExpire := 86400
-)
+var AccessSecret = []byte("ad879037-d3fd-tghj-112d-6bfc35d54b7d")
+var AccessExpire = 86400 * time.Second
+
+type CustomClaims struct {
+	Username string `json:"username"`
+	jwt.RegisteredClaims
+}
 
 type Sha1Stream struct {
 	_sha1 hash.Hash
@@ -79,26 +82,33 @@ func GetFileSize(filename string) int64 {
 }
 
 // GetToken 生成用户token
-func GetToken(username string) (string,error) {
+func GetToken(username string) (string, error) {
 	// 创建Claims
-	claims := &jwt.RegisteredClaims{
-		ExpiresAt: jwt.NewNumericDate(time.Now().Add(AccessExpire)),	// 过期时间
-		Issuer: username, // 签发人
+	claims := CustomClaims{
+		username,
+		jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(AccessExpire)),
+			Issuer:    "my-project",
+		},
 	}
 	// 生成token对象
-	token := jwt.NewWithClaims(jwt.SigningMethodES256, claims)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	// 生成签名字符串
-	return token.SignedString([]byte(AccessSecret))
+	return token.SignedString(AccessSecret)
 }
 
 // IsTokenValid 校验token
-func IsTokenValid(tokenString string) bool {
+func IsTokenValid(tokenString string) (*CustomClaims, error) {
 	// 解析token
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error){
-		return []byte(AccessSecret), nil
+	token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return AccessSecret, nil
 	})
 	if err != nil {
-		return false
+		return nil, err
 	}
-	return token.Valid
+	// 对token对象中的Claim进行类型断言
+	if claims, ok := token.Claims.(*CustomClaims); ok && token.Valid {
+		return claims, nil
+	}
+	return nil, errors.New("invalid token")
 }
